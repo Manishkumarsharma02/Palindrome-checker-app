@@ -4,21 +4,33 @@ UC1:Palindrome checker app
 @author Manish
 @version 1.0
 */
-import java.util.Scanner;
+import  java.util.Scanner;
+
 public class PalindromeCheckerApp {
        public static  void main(String[] args){
            System.out.println("input:");
            Scanner scanner=new Scanner(System.in);
-           String name =(scanner.next());
-           name= name.toLowerCase();
-          boolean present =false;
-           for(int i =0; i<(name.length())/2;i++){
-               if(name.charAt(i)==name.charAt(name.length()-1-i)){
+           String original =(scanner.next());
+           String Reverse ="";
+           boolean present=false;
+           for (int i=original.length()-1;i>=0;i--){
+               Reverse=Reverse+original.charAt(i);
+           }
+           for (int i=0;i<original.length();i++){
+               if(original.charAt(i)==Reverse.charAt(i)){
                    present=true;
-                   break;
+               }else {
+                   present=false;
                }
            }
-           System.out.println(name +"is it  palindrome? :"+present);
+           if(present==true){
+               System.out.println(original+" and "+Reverse+" are Palindrome");
+           }else{
+               System.out.println(original+" and "+Reverse+" are not  Palindrome");
+           }
+
+
+
        }
 }
 
