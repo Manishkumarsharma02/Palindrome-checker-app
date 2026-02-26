@@ -4,28 +4,30 @@ UC1:Palindrome checker app
 @author Manish
 @version 1.0
 */
+import java.util.Queue;
+import java.util.LinkedList;
+import java.util.Stack;
 
 public class PalindromeCheckerApp {
     public static void main(String[] args){
-        String name="radar";
-        char[] chars = name.toCharArray();
-        int start=0;
-        int end= chars.length-1;
-        boolean isPalindrome=true;
-        while(start<end){
-            if(chars[start] != chars[end]){
-                isPalindrome=false;
+        String input = "civic";
+        Queue<Character> queue = new LinkedList<>();
+        Stack<Character> stack = new Stack<>();
+        for (char c : input.toCharArray()) {
+            queue.add(c);
+            stack.push(c);
+        }
+        boolean isPalindrome = true;
+        while (!queue.isEmpty()) {
+            char fromQueue = queue.remove();
+            char fromStack = stack.pop();
+
+            if (fromQueue != fromStack) {
+                isPalindrome = false;
                 break;
             }
-            start++;
-            end--;
         }
-        System.out.println("input text : "+name);
-        System.out.print("Is it a Palindrome? : "+isPalindrome);
-    }
-}
-
-        System.out.println("input text : " + name);
-        System.out.print("Is it a Palindrome? : " + ispalindrome);
+        System.out.println("Input : " + input);
+        System.out.println("Is Palindrome? : " + isPalindrome);
     }
 }
