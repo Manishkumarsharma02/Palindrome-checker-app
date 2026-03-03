@@ -9,142 +9,123 @@ import java.util.Deque;
 import java.util.Scanner;
 import java.util.Stack;
 
-interface PalindromeStrategy {
-    boolean checkPalindrome(String input);
-    String getName();
-}
+public class PalindromeCheckerApp {
 
-// Strategy 1: Stack-based palindrome check
-class StackStrategy implements PalindromeStrategy {
+    // -------------------- Normalization --------------------
+    // Common preprocessing so all algorithms compare fairly
+    static String normalize(String s) {
+        if (s == null) return "";
+        // lower case + remove spaces
+        return s.toLowerCase().replaceAll("\\s+", "");
+    }
 
-    @Override
-    public boolean checkPalindrome(String input) {
-        if (input == null) return false;
+    // -------------------- Algorithm 1: Two-Pointer (Array) --------------------
+    static boolean palindromeTwoPointer(String input) {
+        String s = normalize(input);
+        char[] arr = s.toCharArray();
 
-        String normalized = normalize(input);
+        int left = 0, right = arr.length - 1;
+        while (left < right) {
+            if (arr[left] != arr[right]) return false;
+            left++;
+            right--;
+        }
+        return true;
+    }
+
+    // -------------------- Algorithm 2: Recursion --------------------
+    static boolean palindromeRecursion(String input) {
+        String s = normalize(input);
+        return recCheck(s, 0, s.length() - 1);
+    }
+
+    static boolean recCheck(String s, int start, int end) {
+        if (start >= end) return true;                 // base condition
+        if (s.charAt(start) != s.charAt(end)) return false;
+        return recCheck(s, start + 1, end - 1);
+    }
+
+    // -------------------- Algorithm 3: Stack --------------------
+    static boolean palindromeStack(String input) {
+        String s = normalize(input);
         Stack<Character> stack = new Stack<>();
 
-        // Push all chars
-        for (int i = 0; i < normalized.length(); i++) {
-            stack.push(normalized.charAt(i));
-        }
-
-        // Compare by popping
-        for (int i = 0; i < normalized.length(); i++) {
-            if (normalized.charAt(i) != stack.pop()) {
-                return false;
-            }
+        for (int i = 0; i < s.length(); i++) stack.push(s.charAt(i));
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) != stack.pop()) return false;
         }
         return true;
     }
 
-    @Override
-    public String getName() {
-        return "StackStrategy";
-    }
+    // -------------------- Algorithm 4: Deque --------------------
+    static boolean palindromeDeque(String input) {
+        String s = normalize(input);
+        Deque<Character> dq = new ArrayDeque<>();
 
-    private String normalize(String s) {
-        return s.toLowerCase().replaceAll("\\s+", "");
-    }
-}
+        for (int i = 0; i < s.length(); i++) dq.addLast(s.charAt(i));
 
-// Strategy 2: Deque-based palindrome check (two-end comparison)
-class DequeStrategy implements PalindromeStrategy {
-
-    @Override
-    public boolean checkPalindrome(String input) {
-        if (input == null) return false;
-
-        String normalized = normalize(input);
-        Deque<Character> deque = new ArrayDeque<>();
-
-        // Add all chars to deque
-        for (int i = 0; i < normalized.length(); i++) {
-            deque.addLast(normalized.charAt(i));
-        }
-
-        // Compare from both ends
-        while (deque.size() > 1) {
-            char left = deque.removeFirst();
-            char right = deque.removeLast();
-            if (left != right) {
-                return false;
-            }
+        while (dq.size() > 1) {
+            if (dq.removeFirst() != dq.removeLast()) return false;
         }
         return true;
     }
 
-    @Override
-    public String getName() {
-        return "DequeStrategy";
+    // -------------------- Timing Utility --------------------
+    static long timeAlgo(Runnable r) {
+        long start = System.nanoTime();
+        r.run();
+        long end = System.nanoTime();
+        return end - start;
     }
 
-    private String normalize(String s) {
-        return s.toLowerCase().replaceAll("\\s+", "");
+    // Optional: run each algorithm multiple times to reduce noise
+    static long timeAlgoMultipleRuns(Runnable r, int runs) {
+        long start = System.nanoTime();
+        for (int i = 0; i < runs; i++) r.run();
+        long end = System.nanoTime();
+        return (end - start) / runs; // average per run
     }
-}
-
-// Context class: uses strategy (injected at runtime)
-class PalindromeService {
-    private PalindromeStrategy strategy;
-
-    public PalindromeService(PalindromeStrategy strategy) {
-        this.strategy = strategy;
-    }
-
-    public void setStrategy(PalindromeStrategy strategy) {
-        this.strategy = strategy;
-    }
-
-    public boolean check(String input) {
-        return strategy.checkPalindrome(input);
-    }
-
-    public String currentStrategyName() {
-        return strategy.getName();
-    }
-}
-
-public class PalindromeCheckerApp {
 
     public static void main(String[] args) {
 
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("=== UC12: Strategy Pattern Palindrome Checker ===");
-        System.out.println("Choose Strategy:");
-        System.out.println("1. Stack Strategy");
-        System.out.println("2. Deque Strategy");
-        System.out.print("Enter choice (1/2): ");
-
-        int choice;
-        try {
-            choice = Integer.parseInt(sc.nextLine().trim());
-        } catch (Exception e) {
-            choice = 1; // default
-        }
-
-        PalindromeStrategy selectedStrategy;
-        if (choice == 2) {
-            selectedStrategy = new DequeStrategy();
-        } else {
-            selectedStrategy = new StackStrategy();
-        }
-
-        // Inject strategy at runtime
-        PalindromeService service = new PalindromeService(selectedStrategy);
-
+        System.out.println("=== UC13: Palindrome Performance Comparison ===");
         System.out.print("Enter a string: ");
         String input = sc.nextLine();
 
-        boolean result = service.check(input);
+        // To make timing more stable, we measure average over multiple runs
+        int runs = 1000;
 
-        System.out.println("Using: " + service.currentStrategyName());
-        if (result) {
-            System.out.println("Result: The string is a Palindrome.");
-        } else {
-            System.out.println("Result: The string is NOT a Palindrome.");
+        // Run once for correctness check (all should match)
+        boolean res1 = palindromeTwoPointer(input);
+        boolean res2 = palindromeRecursion(input);
+        boolean res3 = palindromeStack(input);
+        boolean res4 = palindromeDeque(input);
+
+        // If any mismatch (rare), show warning
+        if (!(res1 == res2 && res2 == res3 && res3 == res4)) {
+            System.out.println("Warning: Algorithms returned different results!");
         }
+
+        // Measure timing (average nanoseconds)
+        long t1 = timeAlgoMultipleRuns(() -> palindromeTwoPointer(input), runs);
+        long t2 = timeAlgoMultipleRuns(() -> palindromeRecursion(input), runs);
+        long t3 = timeAlgoMultipleRuns(() -> palindromeStack(input), runs);
+        long t4 = timeAlgoMultipleRuns(() -> palindromeDeque(input), runs);
+
+        System.out.println("\nResult (all algorithms): " + (res1 ? "PALINDROME" : "NOT PALINDROME"));
+        System.out.println("Timing shown as average per run over " + runs + " runs.\n");
+
+        // Display results
+        System.out.println("+---------------------------+---------------+");
+        System.out.println("| Algorithm                 | Time (ns)     |");
+        System.out.println("+---------------------------+---------------+");
+        System.out.printf("| %-25s | %-13d |\n", "Two-Pointer (Array)", t1);
+        System.out.printf("| %-25s | %-13d |\n", "Recursion (Call Stack)", t2);
+        System.out.printf("| %-25s | %-13d |\n", "Stack Strategy", t3);
+        System.out.printf("| %-25s | %-13d |\n", "Deque Strategy", t4);
+        System.out.println("+---------------------------+---------------+");
 
         sc.close();
     }
